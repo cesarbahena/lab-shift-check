@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ShiftCheck.ViewModels"
+             xmlns:models="clr-namespace:ShiftCheck.Models"
+             x:Class="ShiftCheck.Views.PendingSamplesPage"
+             x:DataType="vm:PendingSamplesViewModel"
+             Title="Muestras Pendientes">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Salir" Command="{Binding LogoutCommand}" />
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="10">
+
+        <VerticalStackLayout Grid.Row="0" Spacing="10" Margin="0,0,0,10">
+            <Label Text="{Binding CurrentUserName, StringFormat='Usuario: {0}'}"
+                   FontSize="16"
+                   FontAttributes="Bold" />
+            <Label Text="{Binding SelectedSamples.Count, StringFormat='Seleccionadas: {0}'}"
+                   FontSize="14" />
+        </VerticalStackLayout>
+
+        <RefreshView Grid.Row="1"
+                     IsRefreshing="{Binding IsBusy}"
+                     Command="{Binding LoadSamplesCommand}">
+            <CollectionView ItemsSource="{Binding Samples}"
+                           SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:SampleDto">
+                        <Frame Padding="10" Margin="5" CornerRadius="8">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PendingSamplesViewModel}}, Path=ToggleSampleCommand}"
+                                                     CommandParameter="{Binding .}" />
+                            </Frame.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <VerticalStackLayout Grid.Column="0" Spacing="5">
+                                    <Label Text="{Binding FolioGrd, StringFormat='Folio: {0}'}"
+                                           FontAttributes="Bold" />
+                                    <Label Text="{Binding ClienteGrd, StringFormat='Cliente: {0}'}"
+                                           FontSize="12" />
+                                    <Label Text="{Binding FechaRecep, StringFormat='Recepción: {0:dd/MM/yyyy}'}"
+                                           FontSize="12" />
+                                </VerticalStackLayout>
+                                <CheckBox Grid.Column="1"
+                                         VerticalOptions="Center"
+                                         IsChecked="{Binding Source={RelativeSource AncestorType={x:Type vm:PendingSamplesViewModel}}, Path=SelectedSamples, Converter={StaticResource ContainsConverter}, ConverterParameter={Binding .}}" />
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <Button Grid.Row="2"
+                Text="Crear Entrega de Turno"
+                Command="{Binding CreateHandoverCommand}"
+                IsEnabled="{Binding SelectedSamples.Count, Converter={StaticResource GreaterThanZeroConverter}}"
+                Margin="0,10,0,0" />
+
+    </Grid>
+
+</ContentPage>
