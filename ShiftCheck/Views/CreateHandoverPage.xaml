@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ShiftCheck.ViewModels"
+             xmlns:models="clr-namespace:ShiftCheck.Models"
+             x:Class="ShiftCheck.Views.CreateHandoverPage"
+             x:DataType="vm:CreateHandoverViewModel"
+             Title="Crear Entrega de Turno">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20">
+
+            <Label Text="Fecha de Entrega"
+                   FontSize="16"
+                   FontAttributes="Bold" />
+            <DatePicker Date="{Binding HandoverDate}"
+                       Format="dd/MM/yyyy"
+                       IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
+
+            <Label Text="Turno"
+                   FontSize="16"
+                   FontAttributes="Bold" />
+            <Picker ItemsSource="{Binding Shifts}"
+                   SelectedItem="{Binding SelectedShift}"
+                   ItemDisplayBinding="{Binding Name}"
+                   IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
+
+            <Label Text="Notas"
+                   FontSize="16"
+                   FontAttributes="Bold" />
+            <Editor Text="{Binding Notes}"
+                   HeightRequest="120"
+                   Placeholder="Notas adicionales sobre la entrega de turno..."
+                   IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
+
+            <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                <Button Text="Guardar"
+                       Command="{Binding SaveHandoverCommand}"
+                       IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                       WidthRequest="120" />
+                <Button Text="Cancelar"
+                       Command="{Binding CancelCommand}"
+                       IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                       BackgroundColor="{StaticResource Gray400}"
+                       WidthRequest="120" />
+            </HorizontalStackLayout>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                              IsVisible="{Binding IsBusy}"
+                              HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
