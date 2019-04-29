@@ -36,8 +36,9 @@ public static class MauiProgram
 
 		builder.Services.AddHttpClient("QuimiOSHub", client =>
 		{
-			client.BaseAddress = new Uri("http://localhost:5000");
+			client.BaseAddress = new Uri("http://localhost:5000/api/");
 			client.Timeout = TimeSpan.FromSeconds(30);
+			client.DefaultRequestHeaders.Add("Accept", "application/json");
 		});
 
 		return builder.Build();
