@@ -34,7 +34,7 @@ public class ApiService : IApiService
 		try
 		{
 			var client = await GetAuthenticatedClientAsync();
-			var response = await client.GetAsync("/api/samples/pending");
+			var response = await client.GetAsync("samples/pending");
 
 			if (!response.IsSuccessStatusCode)
 				return new List<SampleDto>();
@@ -54,7 +54,7 @@ public class ApiService : IApiService
 		try
 		{
 			var client = await GetAuthenticatedClientAsync();
-			var response = await client.GetAsync("/api/shifts");
+			var response = await client.GetAsync("shifts");
 
 			if (!response.IsSuccessStatusCode)
 				return new List<ShiftDto>();
@@ -74,7 +74,7 @@ public class ApiService : IApiService
 		try
 		{
 			var client = await GetAuthenticatedClientAsync();
-			var response = await client.GetAsync("/api/users?isActive=true");
+			var response = await client.GetAsync("users?isActive=true");
 
 			if (!response.IsSuccessStatusCode)
 				return new List<UserDto>();
@@ -97,7 +97,7 @@ public class ApiService : IApiService
 			var json = JsonSerializer.Serialize(handover);
 			var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-			var response = await client.PostAsync("/api/shifthandovers", content);
+			var response = await client.PostAsync("shifthandovers", content);
 
 			if (!response.IsSuccessStatusCode)
 				return null;
@@ -117,7 +117,7 @@ public class ApiService : IApiService
 		try
 		{
 			var client = await GetAuthenticatedClientAsync();
-			var url = "/api/shifthandovers";
+			var url = "shifthandovers";
 
 			if (startDate.HasValue || endDate.HasValue)
 			{
