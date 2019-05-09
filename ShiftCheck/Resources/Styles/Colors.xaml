@@ -18,4 +18,9 @@
     <Color x:Key="Gray900">#212121</Color>
     <Color x:Key="Gray950">#141414</Color>
 
+    <Color x:Key="Success">#28a745</Color>
+    <Color x:Key="Warning">#ffc107</Color>
+    <Color x:Key="Danger">#dc3545</Color>
+    <Color x:Key="Info">#17a2b8</Color>
+
 </ResourceDictionary>
