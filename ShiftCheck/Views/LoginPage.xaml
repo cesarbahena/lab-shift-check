@@ -13,6 +13,7 @@
                    FontSize="32"
                    FontAttributes="Bold"
                    HorizontalOptions="Center"
+                   TextColor="{StaticResource Primary}"
                    Margin="0,0,0,30" />
 
             <Label Text="Entrega de Turno"
