@@ -48,3 +48,12 @@ The API base URL is configured in `MauiProgram.cs`. Update the HttpClient config
 2. Build and run the ShiftCheck application
 3. Login with your credentials
 4. View pending samples and create shift handovers
+
+## Testing
+
+The application has been manually tested with the following scenarios:
+- User authentication and token management
+- Pending samples retrieval and display
+- Shift handover creation with multiple samples
+- Navigation between pages
+- Error handling for network failures
