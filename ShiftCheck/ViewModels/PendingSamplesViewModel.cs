@@ -39,10 +39,21 @@ public partial class PendingSamplesViewModel : ObservableObject
 	[RelayCommand]
 	async Task LoadUserAsync()
 	{
-		var user = await _authService.GetCurrentUserAsync();
-		if (user != null)
+		try
 		{
-			CurrentUserName = user.FullName;
+			var user = await _authService.GetCurrentUserAsync();
+			if (user != null)
+			{
+				CurrentUserName = user.FullName;
+			}
+			else
+			{
+				CurrentUserName = "Usuario";
+			}
+		}
+		catch
+		{
+			CurrentUserName = "Usuario";
 		}
 	}
 
