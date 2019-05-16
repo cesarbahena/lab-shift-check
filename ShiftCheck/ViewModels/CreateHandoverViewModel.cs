@@ -59,6 +59,14 @@ public partial class CreateHandoverViewModel : ObservableObject
 			{
 				SelectedShift = Shifts[0];
 			}
+			else
+			{
+				await Shell.Current.DisplayAlert("Error", "No se encontraron turnos disponibles", "OK");
+			}
+		}
+		catch (Exception ex)
+		{
+			await Shell.Current.DisplayAlert("Error", $"Error al cargar turnos: {ex.Message}", "OK");
 		}
 		finally
 		{
