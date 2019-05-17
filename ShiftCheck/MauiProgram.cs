@@ -22,25 +22,30 @@ public static class MauiProgram
 		builder.Logging.AddDebug();
 #endif
 
-		builder.Services.AddSingleton<IAuthService, AuthService>();
-		builder.Services.AddSingleton<IApiService, ApiService>();
+		ConfigureServices(builder.Services);
 
-		builder.Services.AddTransient<LoginPage>();
-		builder.Services.AddTransient<LoginViewModel>();
+		return builder.Build();
+	}
 
-		builder.Services.AddTransient<PendingSamplesPage>();
-		builder.Services.AddTransient<PendingSamplesViewModel>();
+	private static void ConfigureServices(IServiceCollection services)
+	{
+		services.AddSingleton<IAuthService, AuthService>();
+		services.AddSingleton<IApiService, ApiService>();
 
-		builder.Services.AddTransient<CreateHandoverPage>();
-		builder.Services.AddTransient<CreateHandoverViewModel>();
+		services.AddTransient<LoginPage>();
+		services.AddTransient<LoginViewModel>();
 
-		builder.Services.AddHttpClient("QuimiOSHub", client =>
+		services.AddTransient<PendingSamplesPage>();
+		services.AddTransient<PendingSamplesViewModel>();
+
+		services.AddTransient<CreateHandoverPage>();
+		services.AddTransient<CreateHandoverViewModel>();
+
+		services.AddHttpClient("QuimiOSHub", client =>
 		{
 			client.BaseAddress = new Uri("http://localhost:5000/api/");
 			client.Timeout = TimeSpan.FromSeconds(30);
 			client.DefaultRequestHeaders.Add("Accept", "application/json");
 		});
-
-		return builder.Build();
 	}
 }
