@@ -2,6 +2,9 @@
 
 Mobile application for shift handover management in laboratory environments.
 
+**Version:** 1.0.0
+**Release Date:** May 2022
+
 ## Overview
 
 ShiftCheck is a .NET MAUI mobile application designed for managing shift handovers in laboratory settings. It allows laboratory staff to track pending samples and create accountability reports during shift transitions.
