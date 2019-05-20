@@ -5,21 +5,11 @@ namespace ShiftCheck;
 
 public partial class App : Application
 {
-	private readonly IAuthService _authService;
-
-	public App(IAuthService authService)
+	public App(IServiceProvider serviceProvider)
 	{
 		InitializeComponent();
-		_authService = authService;
 
-		SetMainPage();
-	}
-
-	private async void SetMainPage()
-	{
-		var isAuthenticated = await _authService.IsAuthenticatedAsync();
-		MainPage = isAuthenticated
-			? new AppShell()
-			: new NavigationPage(new LoginPage());
+		// Set MainPage immediately to avoid crash
+		MainPage = new NavigationPage(serviceProvider.GetRequiredService<LoginPage>());
 	}
 }

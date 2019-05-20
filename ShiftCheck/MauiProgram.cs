@@ -19,7 +19,7 @@ public static class MauiProgram
 			});
 
 #if DEBUG
-		builder.Logging.AddDebug();
+		// Debug logging available via Microsoft.Extensions.Logging.Debug package
 #endif
 
 		ConfigureServices(builder.Services);
