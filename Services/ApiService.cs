@@ -179,6 +179,7 @@ public class ApiService : IApiService
 				var errorBody = await response.Content.ReadAsStringAsync();
 				_logger.LogWarning("Failed to create shift handover: {StatusCode}, Body: {ErrorBody}",
 					response.StatusCode, errorBody);
+				System.Diagnostics.Debug.WriteLine($"[SHIFTCHECK ERROR] Status: {response.StatusCode}, Body: {errorBody}");
 				return null;
 			}
 
