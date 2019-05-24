@@ -1,15 +1,10 @@
-using ShiftCheck.Services;
-using ShiftCheck.Views;
-
 namespace ShiftCheck;
 
 public partial class App : Application
 {
-	public App(IServiceProvider serviceProvider)
+	public App(AppShell appShell)
 	{
 		InitializeComponent();
-
-		// Set MainPage immediately to avoid crash
-		MainPage = new NavigationPage(serviceProvider.GetRequiredService<LoginPage>());
+		MainPage = appShell;
 	}
 }

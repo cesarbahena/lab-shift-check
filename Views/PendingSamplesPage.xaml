@@ -35,16 +35,23 @@
                             </Frame.GestureRecognizers>
                             <Grid ColumnDefinitions="*,Auto">
                                 <VerticalStackLayout Grid.Column="0" Spacing="5">
-                                    <Label Text="{Binding FolioGrd, StringFormat='Folio: {0}'}"
-                                           FontAttributes="Bold" />
-                                    <Label Text="{Binding ClienteGrd, StringFormat='Cliente: {0}'}"
-                                           FontSize="12" />
-                                    <Label Text="{Binding FechaRecep, StringFormat='Recepción: {0:dd/MM/yyyy}'}"
-                                           FontSize="12" />
+                                    <Label Text="{Binding Folio, StringFormat='Folio: {0}'}"
+                                           FontAttributes="Bold"
+                                           TextColor="{StaticResource Gray900}" />
+                                    <Label Text="{Binding ClientId, StringFormat='Cliente: {0}'}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource Gray600}" />
+                                    <Label Text="{Binding ReceivedAt, StringFormat='Recepción: {0:dd/MM/yyyy}'}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource Gray600}" />
                                 </VerticalStackLayout>
-                                <CheckBox Grid.Column="1"
-                                         VerticalOptions="Center"
-                                         IsChecked="{Binding Source={RelativeSource AncestorType={x:Type vm:PendingSamplesViewModel}}, Path=SelectedSamples, Converter={StaticResource ContainsConverter}, ConverterParameter={Binding .}}" />
+                                <Image Grid.Column="1"
+                                       Source="{FontImage Glyph=✓, Color=Green, Size=24}"
+                                       VerticalOptions="Center"
+                                       WidthRequest="24"
+                                       HeightRequest="24"
+                                       IsVisible="False"
+                                       x:Name="SelectedIcon" />
                             </Grid>
                         </Frame>
                     </DataTemplate>

@@ -3,20 +3,19 @@ namespace ShiftCheck.Models;
 public class SampleDto
 {
 	public int Id { get; set; }
-	public int? FolioGrd { get; set; }
-	public int? ClienteGrd { get; set; }
-	public DateTime? FechaGrd { get; set; }
-	public DateTime? FechaRecep { get; set; }
-	public int? PacienteGrd { get; set; }
-	public int? EstPerGrd { get; set; }
-	public string? Label1 { get; set; }
-	public string? Label3 { get; set; }
-	public string? Maquilador { get; set; }
-	public DateTime? FecCapRes { get; set; }
-	public DateTime? FecLibera { get; set; }
-	public string? SucProc { get; set; }
-	public DateTime? FecNac { get; set; }
-	public DateTime CreatedAt { get; set; }
-	public bool IsCompleted => FecLibera.HasValue;
-	public bool IsPending => !FecLibera.HasValue;
+	public DateTime? CreatedAt { get; set; }
+	public DateTime? ReceivedAt { get; set; }
+	public int? Folio { get; set; }
+	public int? ClientId { get; set; }
+	public int? PatientId { get; set; }
+	public int? ExamId { get; set; }
+	public string? ExamName { get; set; }
+	public DateTime? ProcessedAt { get; set; }
+	public DateTime? ValidatedAt { get; set; }
+	public string? Location { get; set; }
+	public string? Outsourcer { get; set; }
+	public string? Priority { get; set; }
+	public DateTime? BirthDate { get; set; }
+	public bool IsCompleted => ValidatedAt.HasValue;
+	public bool IsPending => !ValidatedAt.HasValue;
 }

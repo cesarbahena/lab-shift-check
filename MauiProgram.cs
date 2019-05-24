@@ -19,7 +19,10 @@ public static class MauiProgram
 			});
 
 #if DEBUG
-		// Debug logging available via Microsoft.Extensions.Logging.Debug package
+		builder.Logging.AddDebug();
+		builder.Logging.SetMinimumLevel(LogLevel.Debug);
+#else
+		builder.Logging.SetMinimumLevel(LogLevel.Information);
 #endif
 
 		ConfigureServices(builder.Services);
@@ -29,6 +32,12 @@ public static class MauiProgram
 
 	private static void ConfigureServices(IServiceCollection services)
 	{
+		services.AddHttpClient("QuimiOSHub", client =>
+		{
+			client.BaseAddress = new Uri("https://quimioshub-production.up.railway.app/api/");
+			client.Timeout = TimeSpan.FromSeconds(30);
+		});
+
 		services.AddSingleton<IAuthService, AuthService>();
 		services.AddSingleton<IApiService, ApiService>();
 
@@ -36,16 +45,11 @@ public static class MauiProgram
 		services.AddTransient<LoginViewModel>();
 
 		services.AddTransient<PendingSamplesPage>();
-		services.AddTransient<PendingSamplesViewModel>();
+		services.AddSingleton<PendingSamplesViewModel>();
 
 		services.AddTransient<CreateHandoverPage>();
 		services.AddTransient<CreateHandoverViewModel>();
 
-		services.AddHttpClient("QuimiOSHub", client =>
-		{
-			client.BaseAddress = new Uri("http://localhost:5000/api/");
-			client.Timeout = TimeSpan.FromSeconds(30);
-			client.DefaultRequestHeaders.Add("Accept", "application/json");
-		});
+		services.AddTransient<AppShell>();
 	}
 }

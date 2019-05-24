@@ -7,8 +7,18 @@
     Shell.FlyoutBehavior="Disabled">
 
     <ShellContent
-        Title="ShiftCheck"
+        Title="Login"
+        ContentTemplate="{DataTemplate local:LoginPage}"
+        Route="LoginPage" />
+
+    <ShellContent
+        Title="Samples"
         ContentTemplate="{DataTemplate local:PendingSamplesPage}"
         Route="PendingSamplesPage" />
+
+    <ShellContent
+        Title="Handover"
+        ContentTemplate="{DataTemplate local:CreateHandoverPage}"
+        Route="CreateHandoverPage" />
 
 </Shell>
