@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace ShiftCheck.Models;
 
 public class CreateShiftHandoverDto
@@ -6,5 +8,6 @@ public class CreateShiftHandoverDto
 	public int UserId { get; set; }
 	public DateTime HandoverDate { get; set; }
 	public string? Notes { get; set; }
-	public List<PendingSampleDto> PendingSamples { get; set; } = new();
+	[JsonPropertyName("pendingExams")]
+	public List<PendingSampleDto> PendingExams { get; set; } = new();
 }

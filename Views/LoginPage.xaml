@@ -22,6 +22,13 @@
                    HorizontalOptions="Center"
                    Margin="0,0,0,40" />
 
+            <Label Text="Servidor Hub"
+                   FontAttributes="Bold" />
+            <Entry Text="{Binding HubUrl}"
+                   Placeholder="https://servidor/api/"
+                   Keyboard="Url"
+                   IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
+
             <Entry Text="{Binding Username}"
                    Placeholder="Usuario"
                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
@@ -32,7 +39,7 @@
                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
 
             <Label Text="{Binding ErrorMessage}"
-                   TextColor="Red"
+                   TextColor="{StaticResource Danger}"
                    IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyConverter}}"
                    HorizontalOptions="Center" />
 

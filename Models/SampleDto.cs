@@ -1,7 +1,12 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace ShiftCheck.Models;
 
-public class SampleDto
+public partial class SampleDto : ObservableObject
 {
+	[ObservableProperty]
+	private bool isSelected;
+
 	public int Id { get; set; }
 	public DateTime? CreatedAt { get; set; }
 	public DateTime? ReceivedAt { get; set; }

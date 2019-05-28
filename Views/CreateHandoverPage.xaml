@@ -33,6 +33,27 @@
                    Placeholder="Notas adicionales sobre la entrega de turno..."
                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
 
+            <Label Text="Exámenes pendientes"
+                   FontSize="16"
+                   FontAttributes="Bold" />
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding PendingItems}" Spacing="10">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:HandoverItem">
+                        <Border Stroke="{StaticResource Gray200}" StrokeThickness="1" Padding="12">
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="{Binding Folio, StringFormat='Folio: {0}'}"
+                                       FontAttributes="Bold" />
+                                <Label Text="{Binding ExamName}"
+                                       TextColor="{StaticResource Gray600}" />
+                                <Entry Text="{Binding Reason}"
+                                       Placeholder="Motivo pendiente"
+                                       MaxLength="500" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
             <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
                 <Button Text="Guardar"
                        Command="{Binding SaveHandoverCommand}"

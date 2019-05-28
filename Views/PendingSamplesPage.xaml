@@ -5,13 +5,13 @@
              xmlns:models="clr-namespace:ShiftCheck.Models"
              x:Class="ShiftCheck.Views.PendingSamplesPage"
              x:DataType="vm:PendingSamplesViewModel"
-             Title="Muestras Pendientes">
+             Title="Exámenes pendientes">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Salir" Command="{Binding LogoutCommand}" />
     </ContentPage.ToolbarItems>
 
-    <Grid RowDefinitions="Auto,*,Auto" Padding="10">
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="10">
 
         <VerticalStackLayout Grid.Row="0" Spacing="10" Margin="0,0,0,10">
             <Label Text="{Binding CurrentUserName, StringFormat='Usuario: {0}'}"
@@ -21,14 +21,28 @@
                    FontSize="14" />
         </VerticalStackLayout>
 
-        <RefreshView Grid.Row="1"
+        <VerticalStackLayout Grid.Row="1" Spacing="6">
+            <Label Text="{Binding LoadError}"
+                   TextColor="{StaticResource Danger}"
+                   IsVisible="{Binding LoadError, Converter={StaticResource StringNotEmptyConverter}}" />
+            <Label Text="{Binding EmptyMessage}"
+                   TextColor="{StaticResource Gray600}"
+                   IsVisible="{Binding EmptyMessage, Converter={StaticResource StringNotEmptyConverter}}" />
+        </VerticalStackLayout>
+
+        <RefreshView Grid.Row="2"
                      IsRefreshing="{Binding IsBusy}"
                      Command="{Binding LoadSamplesCommand}">
             <CollectionView ItemsSource="{Binding Samples}"
                            SelectionMode="None">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:SampleDto">
-                        <Frame Padding="10" Margin="5" CornerRadius="8">
+                        <Frame Padding="12" Margin="5" CornerRadius="8" BorderColor="{StaticResource Gray200}">
+                            <Frame.Triggers>
+                                <DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="BorderColor" Value="{StaticResource Primary}" />
+                                </DataTrigger>
+                            </Frame.Triggers>
                             <Frame.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PendingSamplesViewModel}}, Path=ToggleSampleCommand}"
                                                      CommandParameter="{Binding .}" />
@@ -38,6 +52,11 @@
                                     <Label Text="{Binding Folio, StringFormat='Folio: {0}'}"
                                            FontAttributes="Bold"
                                            TextColor="{StaticResource Gray900}" />
+                                    <Label Text="{Binding ExamName}"
+                                           TextColor="{StaticResource Gray900}" />
+                                    <Label Text="{Binding Priority, StringFormat='Prioridad: {0}'}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource Gray600}" />
                                     <Label Text="{Binding ClientId, StringFormat='Cliente: {0}'}"
                                            FontSize="12"
                                            TextColor="{StaticResource Gray600}" />
@@ -46,11 +65,11 @@
                                            TextColor="{StaticResource Gray600}" />
                                 </VerticalStackLayout>
                                 <Image Grid.Column="1"
-                                       Source="{FontImage Glyph=✓, Color=Green, Size=24}"
+                                       Source="{FontImage Glyph=&#x2713;, Color=Green, Size=24}"
                                        VerticalOptions="Center"
                                        WidthRequest="24"
                                        HeightRequest="24"
-                                       IsVisible="False"
+                                       IsVisible="{Binding IsSelected}"
                                        x:Name="SelectedIcon" />
                             </Grid>
                         </Frame>
@@ -59,7 +78,7 @@
             </CollectionView>
         </RefreshView>
 
-        <Button Grid.Row="2"
+        <Button Grid.Row="3"
                 Text="Crear Entrega de Turno"
                 Command="{Binding CreateHandoverCommand}"
                 IsEnabled="{Binding SelectedSamples.Count, Converter={StaticResource GreaterThanZeroConverter}}"

@@ -26,6 +26,12 @@ public partial class PendingSamplesViewModel : ObservableObject
 	[ObservableProperty]
 	private string currentUserName = string.Empty;
 
+	[ObservableProperty]
+	private string loadError = string.Empty;
+
+	[ObservableProperty]
+	private string emptyMessage = string.Empty;
+
 	public PendingSamplesViewModel(IApiService apiService, IAuthService authService, ILogger<PendingSamplesViewModel> logger)
 	{
 		_apiService = apiService;
@@ -71,22 +77,32 @@ public partial class PendingSamplesViewModel : ObservableObject
 	async Task LoadSamplesAsync()
 	{
 		IsBusy = true;
+		LoadError = string.Empty;
+		EmptyMessage = string.Empty;
 		try
 		{
 			_logger.LogInformation("Loading pending samples");
 			var pendingSamples = await _apiService.GetPendingSamplesAsync();
 
+			SelectedSamples.Clear();
 			Samples.Clear();
 			foreach (var sample in pendingSamples)
 			{
+				sample.IsSelected = false;
 				Samples.Add(sample);
 			}
+
+			if (Samples.Count == 0)
+				EmptyMessage = "No hay exámenes pendientes.";
 
 			_logger.LogInformation("Loaded {Count} pending samples", Samples.Count);
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error loading pending samples");
+			Samples.Clear();
+			SelectedSamples.Clear();
+			LoadError = "No se pudieron cargar los exámenes pendientes. Deslice hacia abajo para reintentar.";
 		}
 		finally
 		{
@@ -100,11 +116,13 @@ public partial class PendingSamplesViewModel : ObservableObject
 		if (SelectedSamples.Contains(sample))
 		{
 			SelectedSamples.Remove(sample);
+			sample.IsSelected = false;
 			_logger.LogDebug("Sample {SampleId} deselected, total selected: {Count}", sample.Id, SelectedSamples.Count);
 		}
 		else
 		{
 			SelectedSamples.Add(sample);
+			sample.IsSelected = true;
 			_logger.LogDebug("Sample {SampleId} selected, total selected: {Count}", sample.Id, SelectedSamples.Count);
 		}
 	}

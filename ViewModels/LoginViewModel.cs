@@ -17,6 +17,9 @@ public partial class LoginViewModel : ObservableObject
 	private string password = string.Empty;
 
 	[ObservableProperty]
+	private string hubUrl = HubConnectionSettings.BaseUrl;
+
+	[ObservableProperty]
 	private bool isBusy;
 
 	[ObservableProperty]
@@ -41,8 +44,15 @@ public partial class LoginViewModel : ObservableObject
 			return;
 		}
 
+		if (!HubConnectionSettings.TryNormalize(HubUrl, out var normalizedUrl))
+		{
+			ErrorMessage = "Ingrese la URL del Hub, con ruta /api.";
+			return;
+		}
+
 		IsBusy = true;
 		ErrorMessage = string.Empty;
+		HubConnectionSettings.BaseUrl = normalizedUrl;
 
 		try
 		{
@@ -61,7 +71,7 @@ public partial class LoginViewModel : ObservableObject
 		}
 		catch (Exception ex)
 		{
-			ErrorMessage = $"Error de conexión: {ex.Message}";
+			ErrorMessage = ex.Message;
 			_logger.LogError(ex, "Login failed with exception");
 		}
 		finally

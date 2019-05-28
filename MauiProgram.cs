@@ -34,7 +34,7 @@ public static class MauiProgram
 	{
 		services.AddHttpClient("QuimiOSHub", client =>
 		{
-			client.BaseAddress = new Uri("https://quimioshub-production.up.railway.app/api/");
+			client.BaseAddress = new Uri(HubConnectionSettings.BaseUrl);
 			client.Timeout = TimeSpan.FromSeconds(30);
 		});
 

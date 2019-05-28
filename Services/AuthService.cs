@@ -7,19 +7,18 @@ namespace ShiftCheck.Services;
 
 public class AuthService : IAuthService
 {
-	private const string ApiUrl = "https://quimioshub-production.up.railway.app/api/auth/login";
 	private const string TokenKey = "auth_token";
 	private const string UsernameKey = "auth_username";
 	private const string FullNameKey = "auth_fullname";
 	private const string RoleKey = "auth_role";
 	private const string UserIdKey = "auth_userid";
 
-	private readonly HttpClient _httpClient;
+	private readonly IHttpClientFactory _httpClientFactory;
 	private readonly ILogger<AuthService> _logger;
 
-	public AuthService(ILogger<AuthService> logger)
+	public AuthService(IHttpClientFactory httpClientFactory, ILogger<AuthService> logger)
 	{
-		_httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+		_httpClientFactory = httpClientFactory;
 		_logger = logger;
 	}
 
@@ -32,8 +31,8 @@ public class AuthService : IAuthService
 			var payload = JsonSerializer.Serialize(new { username, password });
 			var content = new StringContent(payload, Encoding.UTF8, "application/json");
 
-			_logger.LogDebug("Sending POST request to {ApiUrl}", ApiUrl);
-			var response = await _httpClient.PostAsync(ApiUrl, content);
+			var client = _httpClientFactory.CreateClient("QuimiOSHub");
+			var response = await client.PostAsync("auth/login", content);
 
 			_logger.LogInformation("Login response status: {StatusCode}", response.StatusCode);
 
@@ -51,11 +50,15 @@ public class AuthService : IAuthService
 
 			if (result?.Token != null)
 			{
+				if (result.UserId <= 0)
+					throw new InvalidOperationException("El servidor no devolvió el usuario autenticado.");
+
 				_logger.LogDebug("Storing authentication data in SecureStorage");
-				await SecureStorage.Default.SetAsync(TokenKey, result.Token);
+				await SecureStorage.Default.SetAsync(UserIdKey, result.UserId.ToString());
 				await SecureStorage.Default.SetAsync(UsernameKey, result.Username);
 				await SecureStorage.Default.SetAsync(FullNameKey, result.FullName);
 				await SecureStorage.Default.SetAsync(RoleKey, result.Role);
+				await SecureStorage.Default.SetAsync(TokenKey, result.Token);
 
 				_logger.LogInformation("Login successful for user {Username} ({FullName})", result.Username, result.FullName);
 			}

@@ -18,6 +18,9 @@ public partial class CreateHandoverViewModel : ObservableObject
 	private ObservableCollection<ShiftDto> shifts = new();
 
 	[ObservableProperty]
+	private ObservableCollection<HandoverItem> pendingItems = new();
+
+	[ObservableProperty]
 	private ShiftDto? selectedShift;
 
 	[ObservableProperty]
@@ -45,6 +48,16 @@ public partial class CreateHandoverViewModel : ObservableObject
 	public async Task InitializeAsync()
 	{
 		_logger.LogInformation("Initializing CreateHandoverViewModel");
+		PendingItems.Clear();
+		foreach (var sample in _pendingSamplesViewModel.SelectedSamples)
+		{
+			PendingItems.Add(new HandoverItem
+			{
+				ExamId = sample.Id,
+				Folio = sample.Folio,
+				ExamName = sample.ExamName ?? string.Empty
+			});
+		}
 		await LoadShiftsAsync();
 	}
 
@@ -52,6 +65,8 @@ public partial class CreateHandoverViewModel : ObservableObject
 	async Task LoadShiftsAsync()
 	{
 		IsBusy = true;
+		SelectedShift = null;
+		Shifts.Clear();
 		try
 		{
 			_logger.LogInformation("Loading shifts");
@@ -99,7 +114,7 @@ public partial class CreateHandoverViewModel : ObservableObject
 			return;
 		}
 
-		if (_pendingSamplesViewModel.SelectedSamples.Count == 0)
+		if (PendingItems.Count == 0)
 		{
 			_logger.LogWarning("Cannot save handover: no samples selected");
 			await Shell.Current.DisplayAlert("Error", "No hay muestras seleccionadas", "OK");
@@ -120,17 +135,19 @@ public partial class CreateHandoverViewModel : ObservableObject
 				return;
 			}
 
-			var pendingSamples = _pendingSamplesViewModel.SelectedSamples
-				.Select(s => new PendingSampleDto
+			var pendingExams = PendingItems
+				.Select(item => new PendingSampleDto
 				{
-					SampleId = s.Id,
-					Folio = s.Folio,
-					Reason = "Pendiente de liberación"
+					ExamId = item.ExamId,
+					Folio = item.Folio,
+					Reason = string.IsNullOrWhiteSpace(item.Reason)
+						? "Pendiente de liberación"
+						: item.Reason.Trim()
 				})
 				.ToList();
 
 			_logger.LogInformation("Creating handover for shift {ShiftId} with {SampleCount} samples",
-				SelectedShift.Id, pendingSamples.Count);
+				SelectedShift.Id, pendingExams.Count);
 
 			var handover = new CreateShiftHandoverDto
 			{
@@ -138,7 +155,7 @@ public partial class CreateHandoverViewModel : ObservableObject
 				UserId = currentUser.Id,
 				HandoverDate = HandoverDate,
 				Notes = Notes,
-				PendingSamples = pendingSamples
+				PendingExams = pendingExams
 			};
 
 			var result = await _apiService.CreateShiftHandoverAsync(handover);
@@ -153,13 +170,13 @@ public partial class CreateHandoverViewModel : ObservableObject
 			else
 			{
 				_logger.LogWarning("Failed to create handover: API returned null");
-				await Shell.Current.DisplayAlert("Error", "No se pudo crear la entrega de turno", "OK");
+				await Shell.Current.DisplayAlert("Sin confirmación", "No se pudo confirmar la entrega. Consulta Hub antes de reintentar para evitar duplicados.", "OK");
 			}
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error creating handover");
-			await Shell.Current.DisplayAlert("Error", $"Error al crear entrega: {ex.Message}", "OK");
+			await Shell.Current.DisplayAlert("Sin confirmación", "No se pudo confirmar la entrega. Consulta Hub antes de reintentar para evitar duplicados.", "OK");
 		}
 		finally
 		{

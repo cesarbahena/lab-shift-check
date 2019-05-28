@@ -44,7 +44,7 @@ public class ApiService : IApiService
 			_logger.LogInformation("Fetching pending samples from API");
 
 			var client = await GetAuthenticatedClientAsync();
-			var response = await client.GetAsync("samples/pending");
+			var response = await client.GetAsync("exams/pending");
 
 			_logger.LogInformation("GetPendingSamples response: {StatusCode}", response.StatusCode);
 
@@ -53,7 +53,7 @@ public class ApiService : IApiService
 				var errorBody = await response.Content.ReadAsStringAsync();
 				_logger.LogWarning("Failed to fetch pending samples: {StatusCode}, Body: {ErrorBody}",
 					response.StatusCode, errorBody);
-				return new List<SampleDto>();
+				throw new HttpRequestException("No se pudieron cargar los exámenes pendientes.", null, response.StatusCode);
 			}
 
 			var json = await response.Content.ReadAsStringAsync();
@@ -68,12 +68,12 @@ public class ApiService : IApiService
 		catch (HttpRequestException ex)
 		{
 			_logger.LogError(ex, "Network error while fetching pending samples");
-			return new List<SampleDto>();
+			throw;
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Unexpected error while fetching pending samples");
-			return new List<SampleDto>();
+			throw;
 		}
 	}
 
@@ -93,7 +93,7 @@ public class ApiService : IApiService
 				var errorBody = await response.Content.ReadAsStringAsync();
 				_logger.LogWarning("Failed to fetch shifts: {StatusCode}, Body: {ErrorBody}",
 					response.StatusCode, errorBody);
-				return new List<ShiftDto>();
+				throw new HttpRequestException("No se pudieron cargar los turnos.", null, response.StatusCode);
 			}
 
 			var json = await response.Content.ReadAsStringAsync();
@@ -108,12 +108,12 @@ public class ApiService : IApiService
 		catch (HttpRequestException ex)
 		{
 			_logger.LogError(ex, "Network error while fetching shifts");
-			return new List<ShiftDto>();
+			throw;
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Unexpected error while fetching shifts");
-			return new List<ShiftDto>();
+			throw;
 		}
 	}
 
@@ -162,13 +162,11 @@ public class ApiService : IApiService
 		try
 		{
 			_logger.LogInformation("Creating shift handover for shift {ShiftId} with {SampleCount} samples",
-				handover.ShiftId, handover.PendingSamples.Count);
+				handover.ShiftId, handover.PendingExams.Count);
 
 			var client = await GetAuthenticatedClientAsync();
 			var json = JsonSerializer.Serialize(handover);
 			var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-			_logger.LogDebug("Sending handover data: {Json}", json);
 
 			var response = await client.PostAsync("shifthandovers", content);
 
