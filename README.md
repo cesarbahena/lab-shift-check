@@ -1,62 +1,21 @@
 # ShiftCheck
 
-Mobile application for shift handover management in laboratory environments.
+ShiftCheck is the Android handover client for QuimiOS. A technician signs in, reviews exams that have not been validated, selects the work that needs follow-up, records a reason for each exam, and leaves notes for the next shift. The handover is stored in Hub with its shift, author, date, and selected exams.
 
-**Version:** 1.0.0
-**Release Date:** May 2022
+## Run
 
-## Overview
+The project targets `net9.0-android` and requires the .NET 9 SDK, the `maui-android` workload, an Android SDK, and a JDK. Run `dotnet build -f net9.0-android` from this directory after installing those dependencies.
 
-ShiftCheck is a .NET MAUI mobile application designed for managing shift handovers in laboratory settings. It allows laboratory staff to track pending samples and create accountability reports during shift transitions.
+On the login screen, enter the Hub API base URL ending in `/api/`, along with a Hub username and password. The address is remembered on the device. The app requires HTTPS in release builds; debug builds can use HTTP for local development. The Hub must have at least one active shift and user, and synchronized exams for the pending-work screen.
 
-## Features
+## Handover flow
 
-- User authentication
-- View pending laboratory samples
-- Select samples for shift handover
-- Create shift handover reports with notes
-- Track accountability for pending results
+1. Sign in and refresh the pending-exam list. A failed request shows an error instead of an empty-work message.
+2. Select one or more exams. The selection is visible on each card and carried to the handover form.
+3. Choose a shift, add notes, and edit each exam's reason. Save once and check the resulting handover in `GET /api/shifthandovers`.
 
-## Technology Stack
+The app uses `GET /api/exams/pending`, `GET /api/shifts`, `POST /api/shifthandovers`, and `POST /api/auth/login`. The Hub login response supplies the authenticated user ID used for the handover. A failed save keeps the form available for review; confirm the result in Hub before retrying if the connection dropped after submission.
 
-- .NET 6.0
-- .NET MAUI (Multi-platform App UI)
-- CommunityToolkit.Mvvm
-- HttpClient for API communication
+## Current limits
 
-## Dependencies
-
-This application depends on QuimiOSHub API for backend services.
-
-## Platforms
-
-- Android 21.0+
-- iOS 14.2+
-
-## Architecture
-
-The application follows the MVVM pattern with:
-- Models: Data transfer objects matching QuimiOSHub API
-- ViewModels: Business logic and state management
-- Views: XAML-based UI pages
-- Services: API communication and authentication
-
-## Configuration
-
-The API base URL is configured in `MauiProgram.cs`. Update the HttpClient configuration to point to your QuimiOSHub instance.
-
-## Getting Started
-
-1. Ensure QuimiOSHub is running
-2. Build and run the ShiftCheck application
-3. Login with your credentials
-4. View pending samples and create shift handovers
-
-## Testing
-
-The application has been manually tested with the following scenarios:
-- User authentication and token management
-- Pending samples retrieval and display
-- Shift handover creation with multiple samples
-- Navigation between pages
-- Error handling for network failures
+The app has an Android build and a Hub API integration smoke test, but no device interaction test in this repository. It does not yet support acknowledging another technician's handover or offline drafts. See the Hub README for server setup and sample data.
