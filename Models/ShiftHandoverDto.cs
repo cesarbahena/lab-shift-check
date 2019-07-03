@@ -1,6 +1,9 @@
-using System.Text.Json.Serialization;
+using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
-namespace ShiftCheck.Models;
+namespace ShiftCheck.Models
+{
 
 public class ShiftHandoverDto
 {
@@ -10,9 +13,11 @@ public class ShiftHandoverDto
 	public int UserId { get; set; }
 	public string UserName { get; set; } = string.Empty;
 	public DateTime HandoverDate { get; set; }
-	public string? Notes { get; set; }
-	[JsonPropertyName("pendingExamsCount")]
+	public string Notes { get; set; }
+	[JsonProperty("pendingExamsCount")]
 	public int PendingExamsCount { get; set; }
-	[JsonPropertyName("pendingExams")]
-	public List<PendingSampleDto> PendingExams { get; set; } = new();
+	[JsonProperty("pendingExams")]
+	public List<PendingSampleDto> PendingExams { get; set; } = new List<PendingSampleDto>();
+}
+
 }

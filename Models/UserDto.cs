@@ -1,4 +1,6 @@
-namespace ShiftCheck.Models;
+
+namespace ShiftCheck.Models
+{
 
 public class UserDto
 {
@@ -9,4 +11,6 @@ public class UserDto
 	public string Role { get; set; } = string.Empty;
 	public bool IsActive { get; set; }
 	public string DisplayName => $"{FullName} ({Username})";
+}
+
 }

@@ -1,9 +1,14 @@
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Xamarin.Essentials;
 using System.Text;
-using System.Text.Json;
+using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 using ShiftCheck.Models;
 
-namespace ShiftCheck.Services;
+namespace ShiftCheck.Services
+{
 
 public class AuthService : IAuthService
 {
@@ -22,13 +27,13 @@ public class AuthService : IAuthService
 		_logger = logger;
 	}
 
-	public async Task<LoginResponse?> LoginAsync(string username, string password)
+	public async Task<LoginResponse> LoginAsync(string username, string password)
 	{
 		try
 		{
 			_logger.LogInformation("Starting login for user: {Username}", username);
 
-			var payload = JsonSerializer.Serialize(new { username, password });
+			var payload = HubJson.Write(new { username, password });
 			var content = new StringContent(payload, Encoding.UTF8, "application/json");
 
 			var client = _httpClientFactory.CreateClient("QuimiOSHub");
@@ -45,8 +50,7 @@ public class AuthService : IAuthService
 			var body = await response.Content.ReadAsStringAsync();
 			_logger.LogDebug("Response body length: {Length} characters", body.Length);
 
-			var result = JsonSerializer.Deserialize<LoginResponse>(body,
-				new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+			var result = HubJson.Read<LoginResponse>(body);
 
 			if (result?.Token != null)
 			{
@@ -54,11 +58,11 @@ public class AuthService : IAuthService
 					throw new InvalidOperationException("El servidor no devolvió el usuario autenticado.");
 
 				_logger.LogDebug("Storing authentication data in SecureStorage");
-				await SecureStorage.Default.SetAsync(UserIdKey, result.UserId.ToString());
-				await SecureStorage.Default.SetAsync(UsernameKey, result.Username);
-				await SecureStorage.Default.SetAsync(FullNameKey, result.FullName);
-				await SecureStorage.Default.SetAsync(RoleKey, result.Role);
-				await SecureStorage.Default.SetAsync(TokenKey, result.Token);
+				await SecureStorage.SetAsync(UserIdKey, result.UserId.ToString());
+				await SecureStorage.SetAsync(UsernameKey, result.Username);
+				await SecureStorage.SetAsync(FullNameKey, result.FullName);
+				await SecureStorage.SetAsync(RoleKey, result.Role);
+				await SecureStorage.SetAsync(TokenKey, result.Token);
 
 				_logger.LogInformation("Login successful for user {Username} ({FullName})", result.Username, result.FullName);
 			}
@@ -90,21 +94,21 @@ public class AuthService : IAuthService
 	{
 		_logger.LogInformation("Logging out user");
 
-		SecureStorage.Default.Remove(TokenKey);
-		SecureStorage.Default.Remove(UsernameKey);
-		SecureStorage.Default.Remove(FullNameKey);
-		SecureStorage.Default.Remove(RoleKey);
-		SecureStorage.Default.Remove(UserIdKey);
+		SecureStorage.Remove(TokenKey);
+		SecureStorage.Remove(UsernameKey);
+		SecureStorage.Remove(FullNameKey);
+		SecureStorage.Remove(RoleKey);
+		SecureStorage.Remove(UserIdKey);
 
 		_logger.LogInformation("User logged out successfully");
 		await Task.CompletedTask;
 	}
 
-	public async Task<string?> GetTokenAsync()
+	public async Task<string> GetTokenAsync()
 	{
 		try
 		{
-			var token = await SecureStorage.Default.GetAsync(TokenKey);
+			var token = await SecureStorage.GetAsync(TokenKey);
 			_logger.LogDebug("Retrieved token from SecureStorage: {HasToken}", !string.IsNullOrEmpty(token));
 			return token;
 		}
@@ -123,16 +127,16 @@ public class AuthService : IAuthService
 		return isAuthenticated;
 	}
 
-	public async Task<UserDto?> GetCurrentUserAsync()
+	public async Task<UserDto> GetCurrentUserAsync()
 	{
 		try
 		{
 			_logger.LogDebug("Retrieving current user from SecureStorage");
 
-			var username = await SecureStorage.Default.GetAsync(UsernameKey);
-			var fullName = await SecureStorage.Default.GetAsync(FullNameKey);
-			var role = await SecureStorage.Default.GetAsync(RoleKey);
-			var userIdStr = await SecureStorage.Default.GetAsync(UserIdKey);
+			var username = await SecureStorage.GetAsync(UsernameKey);
+			var fullName = await SecureStorage.GetAsync(FullNameKey);
+			var role = await SecureStorage.GetAsync(RoleKey);
+			var userIdStr = await SecureStorage.GetAsync(UserIdKey);
 
 			if (string.IsNullOrEmpty(username))
 			{
@@ -159,4 +163,6 @@ public class AuthService : IAuthService
 			return null;
 		}
 	}
+}
+
 }

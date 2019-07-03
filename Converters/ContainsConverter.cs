@@ -1,11 +1,15 @@
+using System;
+using System.Collections.Generic;
+using Xamarin.Forms;
 using System.Collections;
 using System.Globalization;
 
-namespace ShiftCheck.Converters;
+namespace ShiftCheck.Converters
+{
 
 public class ContainsConverter : IValueConverter
 {
-	public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 	{
 		if (value is IList list && parameter != null)
 		{
@@ -14,8 +18,10 @@ public class ContainsConverter : IValueConverter
 		return false;
 	}
 
-	public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 	{
 		throw new NotImplementedException();
 	}
+}
+
 }

@@ -1,6 +1,8 @@
+using System.Threading.Tasks;
 using ShiftCheck.Models;
 
-namespace ShiftCheck.Services;
+namespace ShiftCheck.Services
+{
 
 /// <summary>
 /// Service for managing user authentication and authorization
@@ -10,7 +12,7 @@ public interface IAuthService
 	/// <summary>
 	/// Authenticates a user with username and password
 	/// </summary>
-	Task<LoginResponse?> LoginAsync(string username, string password);
+	Task<LoginResponse> LoginAsync(string username, string password);
 
 	/// <summary>
 	/// Logs out the current user and clears stored credentials
@@ -20,7 +22,7 @@ public interface IAuthService
 	/// <summary>
 	/// Retrieves the current authentication token
 	/// </summary>
-	Task<string?> GetTokenAsync();
+	Task<string> GetTokenAsync();
 
 	/// <summary>
 	/// Checks if a user is currently authenticated
@@ -30,5 +32,7 @@ public interface IAuthService
 	/// <summary>
 	/// Gets the currently authenticated user information
 	/// </summary>
-	Task<UserDto?> GetCurrentUserAsync();
+	Task<UserDto> GetCurrentUserAsync();
+}
+
 }

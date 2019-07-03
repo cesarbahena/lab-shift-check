@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Shell
     x:Class="ShiftCheck.AppShell"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:ShiftCheck.Views"
     Shell.FlyoutBehavior="Disabled">
@@ -10,15 +10,5 @@
         Title="Ingreso"
         ContentTemplate="{DataTemplate local:LoginPage}"
         Route="LoginPage" />
-
-    <ShellContent
-        Title="Pendientes"
-        ContentTemplate="{DataTemplate local:PendingSamplesPage}"
-        Route="PendingSamplesPage" />
-
-    <ShellContent
-        Title="Entrega"
-        ContentTemplate="{DataTemplate local:CreateHandoverPage}"
-        Route="CreateHandoverPage" />
 
 </Shell>

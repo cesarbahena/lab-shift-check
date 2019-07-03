@@ -1,14 +1,13 @@
-namespace ShiftCheck;
+using Xamarin.Forms;
 
-public partial class App : Application
+namespace ShiftCheck
 {
-	private readonly AppShell _appShell;
-
-	public App(AppShell appShell)
-	{
-		InitializeComponent();
-		_appShell = appShell;
-	}
-
-	protected override Window CreateWindow(IActivationState? activationState) => new(_appShell);
+    public partial class App : Application
+    {
+        public App()
+        {
+            InitializeComponent();
+            MainPage = new AppShell();
+        }
+    }
 }

@@ -1,36 +1,44 @@
+using System;
+using System.Threading.Tasks;
+using Xamarin.Forms;
 using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using ShiftCheck.Models;
 using ShiftCheck.Services;
 using ShiftCheck.Views;
 
-namespace ShiftCheck.ViewModels;
+namespace ShiftCheck.ViewModels
+{
 
-public partial class PendingSamplesViewModel : ObservableObject
+public partial class PendingSamplesViewModel : ViewModelBase
 {
 	private readonly IApiService _apiService;
 	private readonly IAuthService _authService;
 	private readonly ILogger<PendingSamplesViewModel> _logger;
 
-	[ObservableProperty]
-	private ObservableCollection<SampleDto> samples = new();
+	private ObservableCollection<SampleDto> _samples = new ObservableCollection<SampleDto>();
+	public Command LoadUserCommand { get { return new Command(async () => await LoadUserAsync()); } }
+	public Command LoadSamplesCommand { get { return new Command(async () => await LoadSamplesAsync()); } }
+	public Command<SampleDto> ToggleSampleCommand { get { return new Command<SampleDto>(item => ToggleSample(item)); } }
+	public Command CreateHandoverCommand { get { return new Command(async () => await CreateHandoverAsync()); } }
+	public Command LogoutCommand { get { return new Command(async () => await LogoutAsync()); } }
 
-	[ObservableProperty]
-	private ObservableCollection<SampleDto> selectedSamples = new();
+	public ObservableCollection<SampleDto> Samples { get { return _samples; } set { SetProperty(ref _samples, value); } }
 
-	[ObservableProperty]
-	private bool isBusy;
+	private ObservableCollection<SampleDto> _selectedSamples = new ObservableCollection<SampleDto>();
+	public ObservableCollection<SampleDto> SelectedSamples { get { return _selectedSamples; } set { SetProperty(ref _selectedSamples, value); } }
 
-	[ObservableProperty]
-	private string currentUserName = string.Empty;
+	private bool _isBusy;
+	public bool IsBusy { get { return _isBusy; } set { SetProperty(ref _isBusy, value); } }
 
-	[ObservableProperty]
-	private string loadError = string.Empty;
+	private string _currentUserName = string.Empty;
+	public string CurrentUserName { get { return _currentUserName; } set { SetProperty(ref _currentUserName, value); } }
 
-	[ObservableProperty]
-	private string emptyMessage = string.Empty;
+	private string _loadError = string.Empty;
+	public string LoadError { get { return _loadError; } set { SetProperty(ref _loadError, value); } }
+
+	private string _emptyMessage = string.Empty;
+	public string EmptyMessage { get { return _emptyMessage; } set { SetProperty(ref _emptyMessage, value); } }
 
 	public PendingSamplesViewModel(IApiService apiService, IAuthService authService, ILogger<PendingSamplesViewModel> logger)
 	{
@@ -47,7 +55,6 @@ public partial class PendingSamplesViewModel : ObservableObject
 		await LoadSamplesAsync();
 	}
 
-	[RelayCommand]
 	async Task LoadUserAsync()
 	{
 		try
@@ -73,7 +80,6 @@ public partial class PendingSamplesViewModel : ObservableObject
 		}
 	}
 
-	[RelayCommand]
 	async Task LoadSamplesAsync()
 	{
 		IsBusy = true;
@@ -110,7 +116,6 @@ public partial class PendingSamplesViewModel : ObservableObject
 		}
 	}
 
-	[RelayCommand]
 	void ToggleSample(SampleDto sample)
 	{
 		if (SelectedSamples.Contains(sample))
@@ -127,7 +132,6 @@ public partial class PendingSamplesViewModel : ObservableObject
 		}
 	}
 
-	[RelayCommand]
 	async Task CreateHandoverAsync()
 	{
 		_logger.LogInformation("Creating handover with {Count} selected samples", SelectedSamples.Count);
@@ -143,12 +147,13 @@ public partial class PendingSamplesViewModel : ObservableObject
 		await Shell.Current.GoToAsync(nameof(CreateHandoverPage));
 	}
 
-	[RelayCommand]
 	async Task LogoutAsync()
 	{
 		_logger.LogInformation("User logout initiated");
 		await _authService.LogoutAsync();
 		_logger.LogDebug("Navigating to LoginPage");
-		await Shell.Current.GoToAsync("//LoginPage");
+		await Shell.Current.GoToAsync("..");
 	}
+}
+
 }

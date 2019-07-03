@@ -81,7 +81,3 @@ artifacts/
 !**/packages/build/
 *.nuget.props
 *.nuget.targets
-
-# MAUI specific
-**/Resources/Raw/**
-!**/Resources/Raw/.gitkeep

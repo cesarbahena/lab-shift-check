@@ -1,11 +1,14 @@
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
-namespace ShiftCheck.Models;
+namespace ShiftCheck.Models
+{
 
 public class PendingSampleDto
 {
-	[JsonPropertyName("examId")]
+	[JsonProperty("examId")]
 	public int ExamId { get; set; }
 	public int? Folio { get; set; }
 	public string Reason { get; set; } = string.Empty;
+}
+
 }

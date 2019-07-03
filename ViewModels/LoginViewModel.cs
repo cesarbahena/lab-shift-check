@@ -1,29 +1,33 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+using System;
+using System.Threading.Tasks;
+using Xamarin.Forms;
 using Microsoft.Extensions.Logging;
 using ShiftCheck.Services;
 
-namespace ShiftCheck.ViewModels;
+namespace ShiftCheck.ViewModels
+{
 
-public partial class LoginViewModel : ObservableObject
+public partial class LoginViewModel : ViewModelBase
 {
 	private readonly IAuthService _authService;
 	private readonly ILogger<LoginViewModel> _logger;
 
-	[ObservableProperty]
-	private string username = string.Empty;
+	private string _username = string.Empty;
+	public Command LoginCommand { get { return new Command(async () => await LoginAsync()); } }
 
-	[ObservableProperty]
-	private string password = string.Empty;
+	public string Username { get { return _username; } set { SetProperty(ref _username, value); } }
 
-	[ObservableProperty]
-	private string hubUrl = HubConnectionSettings.BaseUrl;
+	private string _password = string.Empty;
+	public string Password { get { return _password; } set { SetProperty(ref _password, value); } }
 
-	[ObservableProperty]
-	private bool isBusy;
+	private string _hubUrl = HubConnectionSettings.BaseUrl;
+	public string HubUrl { get { return _hubUrl; } set { SetProperty(ref _hubUrl, value); } }
 
-	[ObservableProperty]
-	private string errorMessage = string.Empty;
+	private bool _isBusy;
+	public bool IsBusy { get { return _isBusy; } set { SetProperty(ref _isBusy, value); } }
+
+	private string _errorMessage = string.Empty;
+	public string ErrorMessage { get { return _errorMessage; } set { SetProperty(ref _errorMessage, value); } }
 
 	public LoginViewModel(IAuthService authService, ILogger<LoginViewModel> logger)
 	{
@@ -32,7 +36,6 @@ public partial class LoginViewModel : ObservableObject
 		_logger.LogInformation("LoginViewModel initialized");
 	}
 
-	[RelayCommand]
 	async Task LoginAsync()
 	{
 		_logger.LogInformation("Login attempt started for username: {Username}", Username);
@@ -61,7 +64,7 @@ public partial class LoginViewModel : ObservableObject
 			if (result != null)
 			{
 				_logger.LogInformation("Login successful, navigating to PendingSamplesPage");
-				await Shell.Current.GoToAsync($"//PendingSamplesPage");
+				await Shell.Current.GoToAsync("PendingSamplesPage");
 			}
 			else
 			{
@@ -80,4 +83,6 @@ public partial class LoginViewModel : ObservableObject
 			_logger.LogDebug("Login attempt completed, IsBusy set to false");
 		}
 	}
+}
+
 }

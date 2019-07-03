@@ -1,36 +1,43 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Xamarin.Forms;
 using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using ShiftCheck.Models;
 using ShiftCheck.Services;
 
-namespace ShiftCheck.ViewModels;
+namespace ShiftCheck.ViewModels
+{
 
-public partial class CreateHandoverViewModel : ObservableObject
+public partial class CreateHandoverViewModel : ViewModelBase
 {
 	private readonly IApiService _apiService;
 	private readonly IAuthService _authService;
 	private readonly PendingSamplesViewModel _pendingSamplesViewModel;
 	private readonly ILogger<CreateHandoverViewModel> _logger;
 
-	[ObservableProperty]
-	private ObservableCollection<ShiftDto> shifts = new();
+	private ObservableCollection<ShiftDto> _shifts = new ObservableCollection<ShiftDto>();
+	public Command LoadShiftsCommand { get { return new Command(async () => await LoadShiftsAsync()); } }
+	public Command SaveHandoverCommand { get { return new Command(async () => await SaveHandoverAsync()); } }
+	public Command CancelCommand { get { return new Command(async () => await CancelAsync()); } }
 
-	[ObservableProperty]
-	private ObservableCollection<HandoverItem> pendingItems = new();
+	public ObservableCollection<ShiftDto> Shifts { get { return _shifts; } set { SetProperty(ref _shifts, value); } }
 
-	[ObservableProperty]
-	private ShiftDto? selectedShift;
+	private ObservableCollection<HandoverItem> _pendingItems = new ObservableCollection<HandoverItem>();
+	public ObservableCollection<HandoverItem> PendingItems { get { return _pendingItems; } set { SetProperty(ref _pendingItems, value); } }
 
-	[ObservableProperty]
-	private string notes = string.Empty;
+	private ShiftDto _selectedShift;
+	public ShiftDto SelectedShift { get { return _selectedShift; } set { SetProperty(ref _selectedShift, value); } }
 
-	[ObservableProperty]
-	private bool isBusy;
+	private string _notes = string.Empty;
+	public string Notes { get { return _notes; } set { SetProperty(ref _notes, value); } }
 
-	[ObservableProperty]
-	private DateTime handoverDate = DateTime.Now;
+	private bool _isBusy;
+	public bool IsBusy { get { return _isBusy; } set { SetProperty(ref _isBusy, value); } }
+
+	private DateTime _handoverDate = DateTime.Now;
+	public DateTime HandoverDate { get { return _handoverDate; } set { SetProperty(ref _handoverDate, value); } }
 
 	public CreateHandoverViewModel(
 		IApiService apiService,
@@ -61,7 +68,6 @@ public partial class CreateHandoverViewModel : ObservableObject
 		await LoadShiftsAsync();
 	}
 
-	[RelayCommand]
 	async Task LoadShiftsAsync()
 	{
 		IsBusy = true;
@@ -102,7 +108,6 @@ public partial class CreateHandoverViewModel : ObservableObject
 		}
 	}
 
-	[RelayCommand]
 	async Task SaveHandoverAsync()
 	{
 		_logger.LogInformation("Saving handover");
@@ -120,6 +125,22 @@ public partial class CreateHandoverViewModel : ObservableObject
 			await Shell.Current.DisplayAlert("Error", "No hay muestras seleccionadas", "OK");
 			return;
 		}
+
+		if (PendingItems.Any(item => string.IsNullOrWhiteSpace(item.Reason)))
+		{
+			await Shell.Current.DisplayAlert("Faltan motivos", "Escriba un motivo para cada examen pendiente.", "OK");
+			return;
+		}
+
+		var summary = string.Join(", ", PendingItems.Take(8).Select(item => item.Folio.HasValue
+			? item.Folio.Value.ToString() : item.ExamId.ToString()));
+		if (PendingItems.Count > 8)
+			summary += $" y {PendingItems.Count - 8} más";
+		var confirmed = await Shell.Current.DisplayAlert("Revisar entrega",
+			$"Turno: {SelectedShift.Name}\nFecha: {HandoverDate:dd/MM/yyyy}\nExámenes ({PendingItems.Count}): {summary}",
+			"Confirmar", "Volver");
+		if (!confirmed)
+			return;
 
 		IsBusy = true;
 
@@ -140,9 +161,7 @@ public partial class CreateHandoverViewModel : ObservableObject
 				{
 					ExamId = item.ExamId,
 					Folio = item.Folio,
-					Reason = string.IsNullOrWhiteSpace(item.Reason)
-						? "Pendiente de liberación"
-						: item.Reason.Trim()
+					Reason = item.Reason.Trim()
 				})
 				.ToList();
 
@@ -184,10 +203,11 @@ public partial class CreateHandoverViewModel : ObservableObject
 		}
 	}
 
-	[RelayCommand]
 	async Task CancelAsync()
 	{
 		_logger.LogInformation("Handover creation cancelled");
 		await Shell.Current.GoToAsync("..");
 	}
+}
+
 }

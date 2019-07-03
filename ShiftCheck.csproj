@@ -1,39 +1,66 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-	<PropertyGroup>
-		<TargetFrameworks>net9.0-android</TargetFrameworks>
-		<OutputType>Exe</OutputType>
-		<RootNamespace>ShiftCheck</RootNamespace>
-		<UseMaui>true</UseMaui>
-		<SingleProject>true</SingleProject>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-
-		<ApplicationTitle>ShiftCheck</ApplicationTitle>
-		<ApplicationId>com.quimios.shiftcheck</ApplicationId>
-		<ApplicationIdGuid>8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942</ApplicationIdGuid>
-		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-		<ApplicationVersion>1</ApplicationVersion>
-
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
-
-		<!-- Disable Fast Deployment for proper APK packaging -->
-		<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
-	</PropertyGroup>
-
-	<ItemGroup>
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#087E82" />
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#087E82" BaseSize="128,128" />
-		<MauiImage Include="Resources\Images\*" />
-		<MauiFont Include="Resources\Fonts\*" />
-		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.120" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
-	</ItemGroup>
-
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>ShiftCheck</RootNamespace>
+    <AssemblyName>ShiftCheck</AssemblyName>
+    <TargetFrameworkVersion>v9.0</TargetFrameworkVersion>
+    <LangVersion>7.3</LangVersion>
+    <AndroidApplication>true</AndroidApplication>
+    <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
+    <AndroidUseLatestPlatformSdk>false</AndroidUseLatestPlatformSdk>
+    <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
+    <AndroidResgenClass>Resource</AndroidResgenClass>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>portable</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <OutputPath>bin\Debug\</OutputPath>
+    <AndroidLinkMode>None</AndroidLinkMode>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>portable</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <OutputPath>bin\Release\</OutputPath>
+    <AndroidLinkMode>SdkOnly</AndroidLinkMode>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="Mono.Android" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Xamarin.Forms" Version="4.0.0.425677" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App.xaml.cs" />
+    <Compile Include="AppShell.xaml.cs" />
+    <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Converters\*.cs" />
+    <Compile Include="Models\*.cs" />
+    <Compile Include="Services\*.cs" />
+    <Compile Include="ViewModels\*.cs" />
+    <Compile Include="Views\*.xaml.cs" />
+    <Compile Include="Platforms\Android\MainActivity.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="App.xaml"><Generator>MSBuild:Compile</Generator></EmbeddedResource>
+    <EmbeddedResource Include="AppShell.xaml"><Generator>MSBuild:Compile</Generator></EmbeddedResource>
+    <EmbeddedResource Include="Views\*.xaml"><Generator>MSBuild:Compile</Generator></EmbeddedResource>
+    <EmbeddedResource Include="Resources\Styles\*.xaml"><Generator>MSBuild:Compile</Generator></EmbeddedResource>
+    <None Include="Properties\AndroidManifest.xml" />
+    <AndroidResource Include="Resources\values\styles.xml" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
 </Project>

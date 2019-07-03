@@ -1,10 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Text.Json;
+using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 using ShiftCheck.Models;
 
-namespace ShiftCheck.Services;
+namespace ShiftCheck.Services
+{
 
 public class ApiService : IApiService
 {
@@ -53,14 +58,13 @@ public class ApiService : IApiService
 				var errorBody = await response.Content.ReadAsStringAsync();
 				_logger.LogWarning("Failed to fetch pending samples: {StatusCode}, Body: {ErrorBody}",
 					response.StatusCode, errorBody);
-				throw new HttpRequestException("No se pudieron cargar los exámenes pendientes.", null, response.StatusCode);
+				throw new HttpRequestException("No se pudieron cargar los exámenes pendientes.");
 			}
 
 			var json = await response.Content.ReadAsStringAsync();
 			_logger.LogDebug("Received JSON response: {Length} characters", json.Length);
 
-			var samples = JsonSerializer.Deserialize<List<SampleDto>>(json,
-				new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<SampleDto>();
+			var samples = HubJson.Read<List<SampleDto>>(json) ?? new List<SampleDto>();
 
 			_logger.LogInformation("Successfully fetched {Count} pending samples", samples.Count);
 			return samples;
@@ -93,14 +97,13 @@ public class ApiService : IApiService
 				var errorBody = await response.Content.ReadAsStringAsync();
 				_logger.LogWarning("Failed to fetch shifts: {StatusCode}, Body: {ErrorBody}",
 					response.StatusCode, errorBody);
-				throw new HttpRequestException("No se pudieron cargar los turnos.", null, response.StatusCode);
+				throw new HttpRequestException("No se pudieron cargar los turnos.");
 			}
 
 			var json = await response.Content.ReadAsStringAsync();
 			_logger.LogDebug("Received JSON response: {Length} characters", json.Length);
 
-			var shifts = JsonSerializer.Deserialize<List<ShiftDto>>(json,
-				new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<ShiftDto>();
+			var shifts = HubJson.Read<List<ShiftDto>>(json) ?? new List<ShiftDto>();
 
 			_logger.LogInformation("Successfully fetched {Count} shifts", shifts.Count);
 			return shifts;
@@ -139,8 +142,7 @@ public class ApiService : IApiService
 			var json = await response.Content.ReadAsStringAsync();
 			_logger.LogDebug("Received JSON response: {Length} characters", json.Length);
 
-			var users = JsonSerializer.Deserialize<List<UserDto>>(json,
-				new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<UserDto>();
+			var users = HubJson.Read<List<UserDto>>(json) ?? new List<UserDto>();
 
 			_logger.LogInformation("Successfully fetched {Count} active users", users.Count);
 			return users;
@@ -157,7 +159,7 @@ public class ApiService : IApiService
 		}
 	}
 
-	public async Task<ShiftHandoverDto?> CreateShiftHandoverAsync(CreateShiftHandoverDto handover)
+	public async Task<ShiftHandoverDto> CreateShiftHandoverAsync(CreateShiftHandoverDto handover)
 	{
 		try
 		{
@@ -165,7 +167,7 @@ public class ApiService : IApiService
 				handover.ShiftId, handover.PendingExams.Count);
 
 			var client = await GetAuthenticatedClientAsync();
-			var json = JsonSerializer.Serialize(handover);
+			var json = HubJson.Write(handover);
 			var content = new StringContent(json, Encoding.UTF8, "application/json");
 
 			var response = await client.PostAsync("shifthandovers", content);
@@ -184,8 +186,7 @@ public class ApiService : IApiService
 			var responseJson = await response.Content.ReadAsStringAsync();
 			_logger.LogDebug("Received response: {Length} characters", responseJson.Length);
 
-			var result = JsonSerializer.Deserialize<ShiftHandoverDto>(responseJson,
-				new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+			var result = HubJson.Read<ShiftHandoverDto>(responseJson);
 
 			_logger.LogInformation("Successfully created shift handover with ID {HandoverId}", result?.Id);
 			return result;
@@ -240,8 +241,7 @@ public class ApiService : IApiService
 			var json = await response.Content.ReadAsStringAsync();
 			_logger.LogDebug("Received JSON response: {Length} characters", json.Length);
 
-			var handovers = JsonSerializer.Deserialize<List<ShiftHandoverDto>>(json,
-				new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<ShiftHandoverDto>();
+			var handovers = HubJson.Read<List<ShiftHandoverDto>>(json) ?? new List<ShiftHandoverDto>();
 
 			_logger.LogInformation("Successfully fetched {Count} shift handovers", handovers.Count);
 			return handovers;
@@ -257,4 +257,6 @@ public class ApiService : IApiService
 			return new List<ShiftHandoverDto>();
 		}
 	}
+}
+
 }

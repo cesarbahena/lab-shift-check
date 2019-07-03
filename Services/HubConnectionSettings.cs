@@ -1,4 +1,7 @@
-namespace ShiftCheck.Services;
+using System;
+using Xamarin.Essentials;
+namespace ShiftCheck.Services
+{
 
 public static class HubConnectionSettings
 {
@@ -7,11 +10,11 @@ public static class HubConnectionSettings
 
 	public static string BaseUrl
 	{
-		get => Preferences.Default.Get(PreferenceKey, DefaultBaseUrl);
-		set => Preferences.Default.Set(PreferenceKey, value);
+		get => Preferences.Get(PreferenceKey, DefaultBaseUrl);
+		set => Preferences.Set(PreferenceKey, value);
 	}
 
-	public static bool TryNormalize(string? value, out string normalized)
+	public static bool TryNormalize(string value, out string normalized)
 	{
 		normalized = string.Empty;
 		if (!Uri.TryCreate(value?.Trim(), UriKind.Absolute, out var uri) ||
@@ -33,4 +36,6 @@ public static class HubConnectionSettings
 		normalized = uri.AbsoluteUri.TrimEnd('/') + (path.Length == 0 ? "/api/" : "/");
 		return true;
 	}
+}
+
 }

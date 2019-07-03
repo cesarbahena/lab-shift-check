@@ -1,11 +1,13 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+using ShiftCheck.ViewModels;
+using System;
 
-namespace ShiftCheck.Models;
-
-public partial class SampleDto : ObservableObject
+namespace ShiftCheck.Models
 {
-	[ObservableProperty]
-	private bool isSelected;
+
+public partial class SampleDto : ViewModelBase
+{
+	private bool _isSelected;
+	public bool IsSelected { get { return _isSelected; } set { SetProperty(ref _isSelected, value); } }
 
 	public int Id { get; set; }
 	public DateTime? CreatedAt { get; set; }
@@ -14,13 +16,15 @@ public partial class SampleDto : ObservableObject
 	public int? ClientId { get; set; }
 	public int? PatientId { get; set; }
 	public int? ExamId { get; set; }
-	public string? ExamName { get; set; }
+	public string ExamName { get; set; }
 	public DateTime? ProcessedAt { get; set; }
 	public DateTime? ValidatedAt { get; set; }
-	public string? Location { get; set; }
-	public string? Outsourcer { get; set; }
-	public string? Priority { get; set; }
+	public string Location { get; set; }
+	public string Outsourcer { get; set; }
+	public string Priority { get; set; }
 	public DateTime? BirthDate { get; set; }
 	public bool IsCompleted => ValidatedAt.HasValue;
 	public bool IsPending => !ValidatedAt.HasValue;
+}
+
 }

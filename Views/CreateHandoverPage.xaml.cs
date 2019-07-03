@@ -1,10 +1,13 @@
 using ShiftCheck.ViewModels;
+using Xamarin.Forms;
 
-namespace ShiftCheck.Views;
+namespace ShiftCheck.Views
+{
 
 public partial class CreateHandoverPage : ContentPage
 {
 	private readonly CreateHandoverViewModel _viewModel;
+	public CreateHandoverPage() : this(AppBootstrapper.Get<CreateHandoverViewModel>()) { }
 
 	public CreateHandoverPage(CreateHandoverViewModel viewModel)
 	{
@@ -18,4 +21,6 @@ public partial class CreateHandoverPage : ContentPage
 		base.OnAppearing();
 		await _viewModel.InitializeAsync();
 	}
+}
+
 }

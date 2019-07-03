@@ -1,10 +1,13 @@
 using ShiftCheck.ViewModels;
+using Xamarin.Forms;
 
-namespace ShiftCheck.Views;
+namespace ShiftCheck.Views
+{
 
 public partial class PendingSamplesPage : ContentPage
 {
 	private readonly PendingSamplesViewModel _viewModel;
+	public PendingSamplesPage() : this(AppBootstrapper.Get<PendingSamplesViewModel>()) { }
 
 	public PendingSamplesPage(PendingSamplesViewModel viewModel)
 	{
@@ -18,4 +21,6 @@ public partial class PendingSamplesPage : ContentPage
 		base.OnAppearing();
 		await _viewModel.InitializeAsync();
 	}
+}
+
 }

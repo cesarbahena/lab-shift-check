@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:ShiftCheck.ViewModels"
              xmlns:models="clr-namespace:ShiftCheck.Models"
              x:Class="ShiftCheck.Views.CreateHandoverPage"
-             x:DataType="vm:CreateHandoverViewModel"
              Title="Crear Entrega de Turno">
 
     <ScrollView>
-        <VerticalStackLayout Spacing="20" Padding="20">
+        <StackLayout Spacing="20" Padding="20">
 
             <Label Text="Fecha de Entrega"
                    FontSize="16"
@@ -30,17 +29,18 @@
                    FontAttributes="Bold" />
             <Editor Text="{Binding Notes}"
                    HeightRequest="120"
-                   Placeholder="Notas adicionales sobre la entrega de turno..."
                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
 
             <Label Text="Exámenes pendientes"
                    FontSize="16"
                    FontAttributes="Bold" />
-            <VerticalStackLayout BindableLayout.ItemsSource="{Binding PendingItems}" Spacing="10">
+            <Label Text="Revise el turno y escriba un motivo para cada examen antes de confirmar."
+                   TextColor="{StaticResource Gray600}" />
+            <StackLayout BindableLayout.ItemsSource="{Binding PendingItems}" Spacing="10">
                 <BindableLayout.ItemTemplate>
-                    <DataTemplate x:DataType="models:HandoverItem">
-                        <Border Stroke="{StaticResource Gray200}" StrokeThickness="1" Padding="12">
-                            <VerticalStackLayout Spacing="6">
+                    <DataTemplate>
+                        <Frame BorderColor="{StaticResource Gray200}" Padding="12" HasShadow="False">
+                            <StackLayout Spacing="6">
                                 <Label Text="{Binding Folio, StringFormat='Folio: {0}'}"
                                        FontAttributes="Bold" />
                                 <Label Text="{Binding ExamName}"
@@ -48,29 +48,29 @@
                                 <Entry Text="{Binding Reason}"
                                        Placeholder="Motivo pendiente"
                                        MaxLength="500" />
-                            </VerticalStackLayout>
-                        </Border>
+                            </StackLayout>
+                        </Frame>
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
-            </VerticalStackLayout>
+            </StackLayout>
 
-            <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
-                <Button Text="Guardar"
+            <StackLayout Spacing="10" Orientation="Horizontal" HorizontalOptions="Center">
+                <Button Text="Revisar y guardar"
                        Command="{Binding SaveHandoverCommand}"
                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
-                       WidthRequest="120" />
+                       WidthRequest="160" />
                 <Button Text="Cancelar"
                        Command="{Binding CancelCommand}"
                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
                        BackgroundColor="{StaticResource Gray400}"
                        WidthRequest="120" />
-            </HorizontalStackLayout>
+            </StackLayout>
 
             <ActivityIndicator IsRunning="{Binding IsBusy}"
                               IsVisible="{Binding IsBusy}"
                               HorizontalOptions="Center" />
 
-        </VerticalStackLayout>
+        </StackLayout>
     </ScrollView>
 
 </ContentPage>
