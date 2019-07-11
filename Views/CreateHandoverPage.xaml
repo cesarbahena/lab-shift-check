@@ -23,6 +23,11 @@
                    SelectedItem="{Binding SelectedShift}"
                    ItemDisplayBinding="{Binding Name}"
                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
+            <Label Text="{Binding ShiftLoadError}" TextColor="{StaticResource Danger}"
+                   IsVisible="{Binding ShiftLoadError, Converter={StaticResource StringNotEmptyConverter}}" />
+            <Button Text="Reintentar carga de turnos" Command="{Binding LoadShiftsCommand}"
+                    IsVisible="{Binding ShiftLoadError, Converter={StaticResource StringNotEmptyConverter}}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
 
             <Label Text="Notas"
                    FontSize="16"
@@ -54,10 +59,15 @@
                 </BindableLayout.ItemTemplate>
             </StackLayout>
 
+            <Label Text="{Binding SubmissionStatus}" TextColor="{StaticResource Danger}"
+                   IsVisible="{Binding SubmissionStatus, Converter={StaticResource StringNotEmptyConverter}}" />
+            <Label Text="El borrador sigue aquí. Salga para comprobar en Hub si la entrega se registró; no envíe otra desde este formulario."
+                   TextColor="{StaticResource Gray600}" IsVisible="{Binding SubmissionNeedsReview}" />
+
             <StackLayout Spacing="10" Orientation="Horizontal" HorizontalOptions="Center">
                 <Button Text="Revisar y guardar"
                        Command="{Binding SaveHandoverCommand}"
-                       IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                       IsEnabled="{Binding CanSubmit}"
                        WidthRequest="160" />
                 <Button Text="Cancelar"
                        Command="{Binding CancelCommand}"

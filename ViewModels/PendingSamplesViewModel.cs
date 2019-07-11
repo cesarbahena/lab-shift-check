@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 using System.Collections.ObjectModel;
@@ -29,13 +31,14 @@ public partial class PendingSamplesViewModel : ViewModelBase
 	public ObservableCollection<SampleDto> SelectedSamples { get { return _selectedSamples; } set { SetProperty(ref _selectedSamples, value); } }
 
 	private bool _isBusy;
-	public bool IsBusy { get { return _isBusy; } set { SetProperty(ref _isBusy, value); } }
+	public bool IsBusy { get { return _isBusy; } set { if (SetProperty(ref _isBusy, value)) OnPropertyChanged(nameof(CanCreateHandover)); } }
 
 	private string _currentUserName = string.Empty;
 	public string CurrentUserName { get { return _currentUserName; } set { SetProperty(ref _currentUserName, value); } }
 
 	private string _loadError = string.Empty;
-	public string LoadError { get { return _loadError; } set { SetProperty(ref _loadError, value); } }
+	public string LoadError { get { return _loadError; } set { if (SetProperty(ref _loadError, value)) OnPropertyChanged(nameof(CanCreateHandover)); } }
+	public bool CanCreateHandover { get { return !IsBusy && string.IsNullOrEmpty(LoadError) && SelectedSamples.Count > 0; } }
 
 	private string _emptyMessage = string.Empty;
 	public string EmptyMessage { get { return _emptyMessage; } set { SetProperty(ref _emptyMessage, value); } }
@@ -89,26 +92,31 @@ public partial class PendingSamplesViewModel : ViewModelBase
 		{
 			_logger.LogInformation("Loading pending samples");
 			var pendingSamples = await _apiService.GetPendingSamplesAsync();
+			var selectedIds = new HashSet<int>(SelectedSamples.Select(sample => sample.Id));
 
 			SelectedSamples.Clear();
 			Samples.Clear();
 			foreach (var sample in pendingSamples)
 			{
-				sample.IsSelected = false;
+				sample.IsSelected = selectedIds.Contains(sample.Id);
 				Samples.Add(sample);
+				if (sample.IsSelected)
+					SelectedSamples.Add(sample);
 			}
 
 			if (Samples.Count == 0)
 				EmptyMessage = "No hay exámenes pendientes.";
+			OnPropertyChanged(nameof(CanCreateHandover));
 
 			_logger.LogInformation("Loaded {Count} pending samples", Samples.Count);
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error loading pending samples");
-			Samples.Clear();
-			SelectedSamples.Clear();
-			LoadError = "No se pudieron cargar los exámenes pendientes. Deslice hacia abajo para reintentar.";
+			LoadError = Samples.Count == 0
+				? "No se pudieron cargar los exámenes pendientes. Reintente la carga."
+				: "No se pudo actualizar. Se muestran los exámenes de la última carga; reintente antes de preparar la entrega.";
+			OnPropertyChanged(nameof(CanCreateHandover));
 		}
 		finally
 		{
@@ -130,13 +138,14 @@ public partial class PendingSamplesViewModel : ViewModelBase
 			sample.IsSelected = true;
 			_logger.LogDebug("Sample {SampleId} selected, total selected: {Count}", sample.Id, SelectedSamples.Count);
 		}
+		OnPropertyChanged(nameof(CanCreateHandover));
 	}
 
 	async Task CreateHandoverAsync()
 	{
 		_logger.LogInformation("Creating handover with {Count} selected samples", SelectedSamples.Count);
 
-		if (SelectedSamples.Count == 0)
+		if (!CanCreateHandover)
 		{
 			_logger.LogWarning("Cannot create handover: no samples selected");
 			await Shell.Current.DisplayAlert("Error", "Seleccione al menos una muestra pendiente", "OK");

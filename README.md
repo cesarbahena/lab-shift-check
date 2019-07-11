@@ -10,11 +10,11 @@ On the login screen, enter the Hub API base URL ending in `/api/`, along with a 
 
 ## Handover flow
 
-1. Sign in and refresh the pending-exam list. A failed request shows an error instead of an empty-work message.
+1. Sign in and refresh the pending-exam list. A failed refresh keeps the last list and selection visible, labels them as stale, and blocks preparation until a retry succeeds.
 2. Select one or more exams. The selection is visible on each card and carried to the handover form.
 3. Choose a shift, add notes, and give every exam a specific reason. Review the shift, date, and selected folios before confirming. Check the resulting handover in `GET /api/shifthandovers`.
 
-The app uses `GET /api/exams/pending`, `GET /api/shifts`, `POST /api/shifthandovers`, and `POST /api/auth/login`. The Hub login response supplies the authenticated user ID used for the handover. A failed save keeps the form available for review; confirm the result in Hub before retrying if the connection dropped after submission.
+The app uses `GET /api/exams/pending`, `GET /api/shifts`, `POST /api/shifthandovers`, and `POST /api/auth/login`. The Hub login response supplies the authenticated user ID used for the handover. A rejected save keeps the reasons in the form for correction. If a response is lost or Hub reports a server error, the result is uncertain; the form locks submission and directs the technician to check Hub before creating another handover.
 
 ## Current limits
 

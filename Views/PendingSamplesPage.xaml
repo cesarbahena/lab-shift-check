@@ -21,6 +21,8 @@
         <StackLayout Grid.Row="1" Spacing="4">
             <Label Text="{Binding LoadError}" TextColor="{StaticResource Danger}"
                    IsVisible="{Binding LoadError, Converter={StaticResource StringNotEmptyConverter}}" />
+            <Button Text="Reintentar carga" Command="{Binding LoadSamplesCommand}"
+                    IsVisible="{Binding LoadError, Converter={StaticResource StringNotEmptyConverter}}" />
             <Label Text="{Binding EmptyMessage}" TextColor="{StaticResource Gray600}"
                    IsVisible="{Binding EmptyMessage, Converter={StaticResource StringNotEmptyConverter}}" />
         </StackLayout>
@@ -55,6 +57,6 @@
         </ListView>
         <Button Grid.Row="3" Text="Preparar entrega"
                 Command="{Binding CreateHandoverCommand}"
-                IsEnabled="{Binding SelectedSamples.Count, Converter={StaticResource GreaterThanZeroConverter}}" />
+                IsEnabled="{Binding CanCreateHandover}" />
     </Grid>
 </ContentPage>

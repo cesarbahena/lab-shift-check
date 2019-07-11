@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Net.Http.Headers;
+using System.Net;
 using System.Text;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
@@ -159,7 +160,7 @@ public class ApiService : IApiService
 		}
 	}
 
-	public async Task<ShiftHandoverDto> CreateShiftHandoverAsync(CreateShiftHandoverDto handover)
+	public async Task<HandoverSubmissionResult> CreateShiftHandoverAsync(CreateShiftHandoverDto handover)
 	{
 		try
 		{
@@ -176,11 +177,14 @@ public class ApiService : IApiService
 
 			if (!response.IsSuccessStatusCode)
 			{
-				var errorBody = await response.Content.ReadAsStringAsync();
-				_logger.LogWarning("Failed to create shift handover: {StatusCode}, Body: {ErrorBody}",
-					response.StatusCode, errorBody);
-				System.Diagnostics.Debug.WriteLine($"[SHIFTCHECK ERROR] Status: {response.StatusCode}, Body: {errorBody}");
-				return null;
+				_logger.LogWarning("Hub rejected shift handover with status {StatusCode}", response.StatusCode);
+				if (response.StatusCode == HttpStatusCode.RequestTimeout || (int)response.StatusCode >= 500)
+					return HandoverSubmissionResult.Uncertain();
+				if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.Forbidden)
+					return HandoverSubmissionResult.Rejected("La sesión no permite guardar. Inicie sesión de nuevo y revise la entrega.");
+				if (response.StatusCode == HttpStatusCode.Conflict || response.StatusCode == HttpStatusCode.BadRequest)
+					return HandoverSubmissionResult.Rejected("Hub rechazó la entrega. Revise los exámenes pendientes y sus motivos antes de volver a intentar.");
+				return HandoverSubmissionResult.Rejected("Hub rechazó la entrega. Compruebe la conexión y los datos antes de intentar de nuevo.");
 			}
 
 			var responseJson = await response.Content.ReadAsStringAsync();
@@ -188,18 +192,28 @@ public class ApiService : IApiService
 
 			var result = HubJson.Read<ShiftHandoverDto>(responseJson);
 
-			_logger.LogInformation("Successfully created shift handover with ID {HandoverId}", result?.Id);
-			return result;
+			if (result == null || result.Id <= 0)
+			{
+				_logger.LogWarning("Hub returned a successful status without a handover ID");
+				return HandoverSubmissionResult.Uncertain();
+			}
+			_logger.LogInformation("Successfully created shift handover with ID {HandoverId}", result.Id);
+			return HandoverSubmissionResult.Created(result);
 		}
 		catch (HttpRequestException ex)
 		{
-			_logger.LogError(ex, "Network error while creating shift handover");
-			return null;
+			_logger.LogError(ex, "Network error while creating shift handover; result uncertain");
+			return HandoverSubmissionResult.Uncertain();
+		}
+		catch (TaskCanceledException ex)
+		{
+			_logger.LogError(ex, "Timeout while creating shift handover; result uncertain");
+			return HandoverSubmissionResult.Uncertain();
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Unexpected error while creating shift handover");
-			return null;
+			_logger.LogError(ex, "Unexpected error while creating shift handover; result uncertain");
+			return HandoverSubmissionResult.Uncertain();
 		}
 	}
 

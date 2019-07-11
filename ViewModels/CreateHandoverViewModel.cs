@@ -16,6 +16,7 @@ public partial class CreateHandoverViewModel : ViewModelBase
 	private readonly IAuthService _authService;
 	private readonly PendingSamplesViewModel _pendingSamplesViewModel;
 	private readonly ILogger<CreateHandoverViewModel> _logger;
+	private bool _initialized;
 
 	private ObservableCollection<ShiftDto> _shifts = new ObservableCollection<ShiftDto>();
 	public Command LoadShiftsCommand { get { return new Command(async () => await LoadShiftsAsync()); } }
@@ -28,13 +29,26 @@ public partial class CreateHandoverViewModel : ViewModelBase
 	public ObservableCollection<HandoverItem> PendingItems { get { return _pendingItems; } set { SetProperty(ref _pendingItems, value); } }
 
 	private ShiftDto _selectedShift;
-	public ShiftDto SelectedShift { get { return _selectedShift; } set { SetProperty(ref _selectedShift, value); } }
+	public ShiftDto SelectedShift { get { return _selectedShift; } set { if (SetProperty(ref _selectedShift, value)) OnPropertyChanged(nameof(CanSubmit)); } }
 
 	private string _notes = string.Empty;
 	public string Notes { get { return _notes; } set { SetProperty(ref _notes, value); } }
 
 	private bool _isBusy;
-	public bool IsBusy { get { return _isBusy; } set { SetProperty(ref _isBusy, value); } }
+	public bool IsBusy { get { return _isBusy; } set { if (SetProperty(ref _isBusy, value)) OnPropertyChanged(nameof(CanSubmit)); } }
+	public bool CanSubmit { get { return !IsBusy && !IsReviewing && !SubmissionNeedsReview && SelectedShift != null && string.IsNullOrEmpty(ShiftLoadError); } }
+
+	private bool _isReviewing;
+	public bool IsReviewing { get { return _isReviewing; } set { if (SetProperty(ref _isReviewing, value)) OnPropertyChanged(nameof(CanSubmit)); } }
+
+	private bool _submissionNeedsReview;
+	public bool SubmissionNeedsReview { get { return _submissionNeedsReview; } set { if (SetProperty(ref _submissionNeedsReview, value)) OnPropertyChanged(nameof(CanSubmit)); } }
+
+	private string _submissionStatus = string.Empty;
+	public string SubmissionStatus { get { return _submissionStatus; } set { SetProperty(ref _submissionStatus, value); } }
+
+	private string _shiftLoadError = string.Empty;
+	public string ShiftLoadError { get { return _shiftLoadError; } set { if (SetProperty(ref _shiftLoadError, value)) OnPropertyChanged(nameof(CanSubmit)); } }
 
 	private DateTime _handoverDate = DateTime.Now;
 	public DateTime HandoverDate { get { return _handoverDate; } set { SetProperty(ref _handoverDate, value); } }
@@ -54,6 +68,9 @@ public partial class CreateHandoverViewModel : ViewModelBase
 
 	public async Task InitializeAsync()
 	{
+		if (_initialized)
+			return;
+		_initialized = true;
 		_logger.LogInformation("Initializing CreateHandoverViewModel");
 		PendingItems.Clear();
 		foreach (var sample in _pendingSamplesViewModel.SelectedSamples)
@@ -70,13 +87,15 @@ public partial class CreateHandoverViewModel : ViewModelBase
 
 	async Task LoadShiftsAsync()
 	{
+		if (IsBusy)
+			return;
 		IsBusy = true;
-		SelectedShift = null;
-		Shifts.Clear();
+		ShiftLoadError = string.Empty;
 		try
 		{
 			_logger.LogInformation("Loading shifts");
 			var shiftList = await _apiService.GetShiftsAsync();
+			var selectedId = SelectedShift == null ? 0 : SelectedShift.Id;
 
 			Shifts.Clear();
 			foreach (var shift in shiftList)
@@ -88,19 +107,20 @@ public partial class CreateHandoverViewModel : ViewModelBase
 
 			if (Shifts.Count > 0)
 			{
-				SelectedShift = Shifts[0];
+				SelectedShift = Shifts.FirstOrDefault(shift => shift.Id == selectedId) ?? Shifts[0];
 				_logger.LogDebug("Default shift selected: {ShiftName}", SelectedShift.Name);
 			}
 			else
 			{
 				_logger.LogWarning("No shifts available");
-				await Shell.Current.DisplayAlert("Error", "No se encontraron turnos disponibles", "OK");
+				SelectedShift = null;
+				ShiftLoadError = "No hay turnos disponibles. Reintente la carga o consulte Hub.";
 			}
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error loading shifts");
-			await Shell.Current.DisplayAlert("Error", $"Error al cargar turnos: {ex.Message}", "OK");
+			ShiftLoadError = "No se pudieron cargar los turnos. Compruebe la conexión y reintente.";
 		}
 		finally
 		{
@@ -110,6 +130,9 @@ public partial class CreateHandoverViewModel : ViewModelBase
 
 	async Task SaveHandoverAsync()
 	{
+		if (!CanSubmit)
+			return;
+		SubmissionStatus = string.Empty;
 		_logger.LogInformation("Saving handover");
 
 		if (SelectedShift == null)
@@ -136,9 +159,18 @@ public partial class CreateHandoverViewModel : ViewModelBase
 			? item.Folio.Value.ToString() : item.ExamId.ToString()));
 		if (PendingItems.Count > 8)
 			summary += $" y {PendingItems.Count - 8} más";
-		var confirmed = await Shell.Current.DisplayAlert("Revisar entrega",
-			$"Turno: {SelectedShift.Name}\nFecha: {HandoverDate:dd/MM/yyyy}\nExámenes ({PendingItems.Count}): {summary}",
-			"Confirmar", "Volver");
+		IsReviewing = true;
+		bool confirmed;
+		try
+		{
+			confirmed = await Shell.Current.DisplayAlert("Revisar entrega",
+				$"Turno: {SelectedShift.Name}\nFecha: {HandoverDate:dd/MM/yyyy}\nExámenes ({PendingItems.Count}): {summary}",
+				"Confirmar", "Volver");
+		}
+		finally
+		{
+			IsReviewing = false;
+		}
 		if (!confirmed)
 			return;
 
@@ -149,7 +181,7 @@ public partial class CreateHandoverViewModel : ViewModelBase
 			_logger.LogDebug("Getting current user");
 			var currentUser = await _authService.GetCurrentUserAsync();
 
-			if (currentUser == null)
+			if (currentUser == null || currentUser.Id <= 0)
 			{
 				_logger.LogError("Cannot save handover: user not authenticated");
 				await Shell.Current.DisplayAlert("Error", "Usuario no autenticado", "OK");
@@ -179,23 +211,25 @@ public partial class CreateHandoverViewModel : ViewModelBase
 
 			var result = await _apiService.CreateShiftHandoverAsync(handover);
 
-			if (result != null)
+			if (result.Status == HandoverSubmissionStatus.Created)
 			{
-				_logger.LogInformation("Handover created successfully with ID {HandoverId}", result.Id);
+				_logger.LogInformation("Handover created successfully with ID {HandoverId}", result.Handover.Id);
 				await Shell.Current.DisplayAlert("Éxito", "Entrega de turno creada correctamente", "OK");
 				_pendingSamplesViewModel.SelectedSamples.Clear();
 				await Shell.Current.GoToAsync("..");
 			}
 			else
 			{
-				_logger.LogWarning("Failed to create handover: API returned null");
-				await Shell.Current.DisplayAlert("Sin confirmación", "No se pudo confirmar la entrega. Consulta Hub antes de reintentar para evitar duplicados.", "OK");
+				SubmissionNeedsReview = result.Status == HandoverSubmissionStatus.Uncertain;
+				SubmissionStatus = result.Message;
+				_logger.LogWarning("Handover not confirmed: {Status}", result.Status);
 			}
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error creating handover");
-			await Shell.Current.DisplayAlert("Sin confirmación", "No se pudo confirmar la entrega. Consulta Hub antes de reintentar para evitar duplicados.", "OK");
+			SubmissionNeedsReview = true;
+			SubmissionStatus = HandoverSubmissionResult.Uncertain().Message;
 		}
 		finally
 		{
